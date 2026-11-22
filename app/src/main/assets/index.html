@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>אלוף המילים</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+html,body{margin:0;height:100%;overflow:hidden;color:#fff;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Hebrew",Arial,sans-serif;
+  font-size:clamp(14px,min(4.4vw,2.8vh),20px)}
+body{background:radial-gradient(120% 80% at 50% 0%,#3b2f9e 0%,#1b1760 55%,#0f0d33 100%)}
+#app{position:fixed;inset:0;z-index:1}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;gap:.55rem;padding:.6rem .7rem}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:.4rem}
+.top{display:flex;gap:.4rem;align-items:center;justify-content:space-between}
+.chip{background:rgba(255,255,255,.14);border:0;color:#fff;border-radius:999px;padding:.25rem .7rem;font-weight:800;font-size:.95rem;font-family:inherit}
+.hello{font-size:1.25rem;font-weight:900;line-height:1.25}
+.hello small{display:block;font-size:.85rem;font-weight:600;opacity:.85;margin-top:.15rem}
+.bar{height:.55rem;background:rgba(255,255,255,.16);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(270deg,#ffd54a,#ff8a3d);border-radius:99px;transition:width .35s}
+.hint{font-size:.8rem;opacity:.85;margin:.2rem 0 .1rem}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.lvl{border:0;color:#fff;font-family:inherit;border-radius:1.1rem;padding:.65rem .4rem;text-align:center;
+  background:linear-gradient(160deg,var(--c),color-mix(in srgb,var(--c) 55%,#000));box-shadow:0 4px 0 rgba(0,0,0,.35);position:relative}
+.lvl:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
+.lvl .em{font-size:2rem}
+.lvl .nm{font-weight:900;font-size:.95rem}
+.lvl .sub{font-size:.75rem;opacity:.9}
+.lvl .st{font-size:1rem;letter-spacing:.05rem;min-height:1.2rem}
+.lvl.lock{filter:grayscale(.85) brightness(.75)}
+.btn{border:0;border-radius:1rem;padding:.75rem 1rem;font-size:1.1rem;font-weight:900;color:#fff;font-family:inherit;
+  background:linear-gradient(#ffb300,#ff7a00);box-shadow:0 4px 0 #b34a00}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #b34a00}
+.btn.sec{background:rgba(255,255,255,.16);box-shadow:0 4px 0 rgba(0,0,0,.3)}
+.btn.green{background:linear-gradient(#3ddc84,#1fae5f);box-shadow:0 4px 0 #137a42}
+.row{display:flex;gap:.5rem}.row>*{flex:1}
+.qcard{background:rgba(255,255,255,.1);border-radius:1.2rem;padding:.7rem;text-align:center}
+.big{font-size:3.4rem;line-height:1.1}
+.word{font-size:2.1rem;font-weight:900;direction:ltr}
+.he{font-size:2.1rem;font-weight:900}
+.sm{font-size:.85rem;opacity:.85}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:.55rem}
+.opt{min-height:3.5rem;border:0;border-radius:1rem;background:#fff;color:#1b1760;font-size:1.2rem;font-weight:900;
+  font-family:inherit;box-shadow:0 4px 0 #b8b4e8;padding:.3rem}
+.opt:active{transform:translateY(3px);box-shadow:0 1px 0 #b8b4e8}
+.opt.en{direction:ltr}.opt.emo{font-size:2.3rem}
+.opt.ok{background:#2ecc71;color:#fff;box-shadow:0 4px 0 #1b8a4b}
+.opt.bad{background:#ff5a6e;color:#fff;box-shadow:0 4px 0 #b3283a;animation:shake .35s}
+.opt.sel{background:#ffe082;box-shadow:0 4px 0 #c9a227}
+.opt.done{background:#2ecc71;color:#fff;box-shadow:none;opacity:.6;pointer-events:none}
+.match{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.match .opt{min-height:3rem;font-size:1.05rem}
+.fb{min-height:2.6rem;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:900;font-size:1rem;line-height:1.2}
+.fb.ok{color:#8dffb8}.fb.bad{color:#ffd0d6}
+.tbar{height:.5rem;background:rgba(255,255,255,.15);border-radius:99px;overflow:hidden}
+.tbar i{display:block;height:100%;width:100%;background:linear-gradient(270deg,#ffb300,#ff5a6e);float:right}
+.stars{display:flex;justify-content:center;gap:.4rem}
+.star{font-size:2.8rem;filter:grayscale(1) opacity(.3)}
+.star.on{filter:none;animation:pop .55s both;animation-delay:var(--d)}
+.banner{background:linear-gradient(135deg,#ffd54a,#ff8a3d);color:#3a2100;border-radius:1rem;padding:.55rem .7rem;font-weight:900;text-align:center;animation:pop .6s both}
+.sum{background:rgba(255,255,255,.1);border-radius:1rem;padding:.55rem .8rem;font-weight:700;line-height:1.7}
+.toast{position:fixed;left:50%;bottom:1.2rem;transform:translateX(-50%);background:#fff;color:#1b1760;padding:.55rem .9rem;
+  border-radius:1rem;font-weight:900;z-index:50;max-width:90%;text-align:center;animation:pop .3s both;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+.conf{position:fixed;top:-2rem;font-size:1.4rem;pointer-events:none;z-index:0;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(115vh) rotate(420deg)}}
+@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.25)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes bump{50%{transform:scale(1.25)}}
+.bump{animation:bump .3s}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+'use strict';
+/* ================= נתונים: קל להוסיף רמות ומילים כאן ================= */
+const NAME = 'יהודה';
+// need = סך הנקודות הדרוש כדי לפתוח את הרמה. מילה: [אנגלית, עברית, אימוג'י]
+const LEVELS = [
+ {t:'חיות',e:'🐾',c:'#ff8a3d',need:0,w:[['dog','כלב','🐶'],['cat','חתול','🐱'],['cow','פרה','🐮'],['horse','סוס','🐴'],['fish','דג','🐟'],['bird','ציפור','🐦'],['rabbit','ארנב','🐰'],['lion','אריה','🦁'],['monkey','קוף','🐵'],['elephant','פיל','🐘'],['bear','דוב','🐻'],['duck','ברווז','🦆']]},
+ {t:'אוכל ושתייה',e:'🍎',c:'#e8505b',need:100,w:[['apple','תפוח','🍎'],['banana','בננה','🍌'],['bread','לחם','🍞'],['milk','חלב','🥛'],['egg','ביצה','🥚'],['cheese','גבינה','🧀'],['water','מים','💧'],['pizza','פיצה','🍕'],['cake','עוגה','🍰'],['orange','תפוז','🍊'],['grapes','ענבים','🍇'],['tomato','עגבנייה','🍅']]},
+ {t:'הבית',e:'🏠',c:'#3f8efc',need:260,w:[['house','בית','🏠'],['door','דלת','🚪'],['bed','מיטה','🛏️'],['chair','כיסא','🪑'],['key','מפתח','🔑'],['clock','שעון','⏰'],['lamp','מנורה','💡'],['book','ספר','📖'],['window','חלון','🪟'],['phone','טלפון','📱'],['television','טלוויזיה','📺'],['bath','אמבטיה','🛁']]},
+ {t:'צבעים וצורות',e:'🎨',c:'#9b5de5',need:460,w:[['red','אדום','🔴'],['blue','כחול','🔵'],['green','ירוק','🟢'],['yellow','צהוב','🟡'],['purple','סגול','🟣'],['orange','כתום','🟠'],['brown','חום','🟤'],['black','שחור','⚫'],['white','לבן','⚪'],['star','כוכב','⭐'],['heart','לב','❤️'],['diamond','יהלום','💎']]},
+ {t:'אנשים',e:'👪',c:'#14b8a6',need:700,w:[['mother','אמא','👩'],['father','אבא','👨'],['baby','תינוק','👶'],['boy','ילד','👦'],['girl','ילדה','👧'],['grandmother','סבתא','👵'],['grandfather','סבא','👴'],['friend','חבר','🤝'],['teacher','מורה','🧑‍🏫'],['doctor','רופא','🧑‍⚕️'],['police','שוטר','👮'],['king','מלך','👑']]},
+ {t:'טבע ומזג אוויר',e:'🌦️',c:'#22a45d',need:980,w:[['sun','שמש','☀️'],['moon','ירח','🌙'],['rain','גשם','🌧️'],['snow','שלג','❄️'],['cloud','ענן','☁️'],['wind','רוח','💨'],['tree','עץ','🌳'],['flower','פרח','🌸'],['sea','ים','🌊'],['mountain','הר','⛰️'],['fire','אש','🔥'],['rainbow','קשת','🌈']]},
+ {t:'עיר ותחבורה',e:'🚌',c:'#f59e0b',need:1300,w:[['car','מכונית','🚗'],['bus','אוטובוס','🚌'],['train','רכבת','🚆'],['plane','מטוס','✈️'],['ship','ספינה','🚢'],['bicycle','אופניים','🚲'],['school','בית ספר','🏫'],['hospital','בית חולים','🏥'],['shop','חנות','🏪'],['road','כביש','🛣️'],['money','כסף','💰'],['ticket','כרטיס','🎫']]},
+ {t:'פעולות',e:'🏃',c:'#ef476f',need:1660,w:[['eat','לאכול','🍽️'],['drink','לשתות','🥤'],['sleep','לישון','😴'],['run','לרוץ','🏃'],['swim','לשחות','🏊'],['read','לקרוא','📚'],['write','לכתוב','✍️'],['sing','לשיר','🎤'],['dance','לרקוד','💃'],['play','לשחק','🎮'],['listen','להאזין','🎧'],['think','לחשוב','🤔']]}
+];
+const ALL = LEVELS.flatMap(l => l.w);
+const ROUNDS = 10;
+
+/* ================= עזרים ================= */
+const $ = s => document.querySelector(s);
+const app = $('#app');
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const KEY = 'vocab_yehuda_v1';
+const dayStr = d => d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+
+function defState() { return { points: 0, stars: {}, plays: 0, sound: true, days: 0, last: '' }; }
+let S = (() => { try { return Object.assign(defState(), JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { return defState(); } })();
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+(function dailyStreak() {
+  const now = new Date(), today = dayStr(now);
+  if (S.last === today) return;
+  const y = new Date(now); y.setDate(y.getDate() - 1);
+  S.days = (S.last === dayStr(y)) ? S.days + 1 : 1;
+  S.last = today; save();
+})();
+
+const isUnlocked = i => S.points >= LEVELS[i].need;
+const unlockedSet = () => LEVELS.map((_, i) => isUnlocked(i));
+
+/* ================= צלילים ================= */
+let AC;
+function tone(f, d, type = 'sine', v = .15, when = 0) {
+  if (!S.sound) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const o = AC.createOscillator(), g = AC.createGain(), t0 = AC.currentTime + when;
+    o.type = type; o.frequency.value = f; o.connect(g); g.connect(AC.destination);
+    g.gain.setValueAtTime(v, t0); g.gain.exponentialRampToValueAtTime(.001, t0 + d);
+    o.start(t0); o.stop(t0 + d);
+  } catch (e) {}
+}
+const sfx = {
+  tap() { tone(520, .05, 'square', .04); },
+  ok() { tone(660, .12); tone(880, .2, 'sine', .15, .1); },
+  bad() { tone(190, .28, 'sawtooth', .09); },
+  win() { [523, 659, 784, 1047].forEach((f, i) => tone(f, .28, 'triangle', .15, i * .12)); },
+  unlock() { [784, 988, 1175, 1568, 1976].forEach((f, i) => tone(f, .3, 'triangle', .15, i * .1)); }
+};
+function buzz(ms) { try { if (S.sound && navigator.vibrate) navigator.vibrate(ms); } catch (e) {} }
+const canSpeak = () => 'speechSynthesis' in window;
+function speak(t) { try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'en-US'; u.rate = .85; speechSynthesis.speak(u); } catch (e) {} }
+
+/* ================= משוב ומחמאות ================= */
+const OKS = ['מעולה', 'יפה מאוד', 'נכון', 'וואו', 'אלוף', 'מושלם', 'פצצה', 'גאון', 'בול', 'מדהים'];
+const okMsg = () => pick(OKS) + ', ' + NAME + '! ' + pick(['🌟', '👏', '🎉', '💪', '🔥', '✨']);
+const STREAK_MSG = {
+  3: '🔥 שלוש ברצף! ' + NAME + ', אתה בוער!',
+  5: '⚡ חמש ברצף! ' + NAME + ', אי אפשר לעצור אותך!',
+  7: '🚀 שבע ברצף! ' + NAME + ', אתה פשוט מכונת מילים!',
+  10: '👑 עשר ברצף! ' + NAME + ', מלך המילים!'
+};
+const BAD_MSG = [
+  'כמעט, ' + NAME + '! עכשיו תזכור אותה 💪',
+  'לא נורא ' + NAME + ', ככה לומדים! התשובה בירוק 💚',
+  'טעות קטנה, פוטנציאל ענק ' + NAME + '! 🌈',
+  'אלופים לומדים מטעויות, ' + NAME + '! 💫'
+];
+const RESULT_MSG = [
+  'לא נורא ' + NAME + ', ככה לומדים! עוד ניסיון אחד ואתה שם. אני מאמין בך! 💙',
+  'יפה מאוד ' + NAME + '! עברת את הרמה, וכל חזרה הופכת אותך לחזק יותר 💪',
+  'כל הכבוד ' + NAME + '! כמעט מושלם, עוד טיפה ותקבל שלושה כוכבים! 🌟',
+  'שלושה כוכבים! ' + NAME + ', אתה גאון מילים אמיתי! 🏆'
+];
+const HOME_MSG = ['מוכן לשבור שיאים היום?', 'כל מילה חדשה היא עוד כוח-על 🦸', 'אתה על הדרך הנכונה, תמשיך כך!', 'הקצב שלך מרשים באמת ✨'];
+
+function toast(msg) {
+  document.querySelectorAll('.toast').forEach(e => e.remove());
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 2300);
+}
+function confetti(n = 28) {
+  for (let i = 0; i < n; i++) {
+    const s = document.createElement('span'); s.className = 'conf';
+    s.textContent = pick(['🎉', '⭐', '✨', '🎊', '🌟']);
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.animationDuration = (1.8 + Math.random() * 1.8) + 's';
+    s.style.animationDelay = Math.random() * .6 + 's';
+    document.body.appendChild(s); setTimeout(() => s.remove(), 4200);
+  }
+}
+
+/* ================= מסך הבית ================= */
+let screen = 'home';
+function home() {
+  screen = 'home'; stopTimer();
+  const nextIdx = LEVELS.findIndex(l => S.points < l.need);
+  let prog = '';
+  if (nextIdx >= 0) {
+    const from = LEVELS[nextIdx - 1] ? LEVELS[nextIdx - 1].need : 0, to = LEVELS[nextIdx].need;
+    const pct = Math.max(0, Math.min(100, (S.points - from) / (to - from) * 100));
+    prog = `<div><div class="hint">עוד <b>${to - S.points}</b> נקודות לפתיחת רמה ${nextIdx + 1} — ${LEVELS[nextIdx].t} ${LEVELS[nextIdx].e}</div><div class="bar"><i style="width:${pct}%"></i></div></div>`;
+  } else {
+    prog = `<div class="hint">🏆 פתחת את כל הרמות, ${NAME}! אתה אלוף אמיתי!</div>`;
+  }
+  const hello = S.plays === 0 ? `שלום ${NAME}! 👋<small>מוכן להרפתקה? בוא נתחיל ברמה הראשונה!</small>`
+                              : `ברוך שובך, ${NAME}! 🌟<small>${pick(HOME_MSG)}</small>`;
+  const cards = LEVELS.map((l, i) => {
+    const un = isUnlocked(i), st = S.stars[i] || 0;
+    return `<button class="lvl ${un ? '' : 'lock'}" style="--c:${l.c}" data-i="${i}">
+      <div class="em">${un ? l.e : '🔒'}</div><div class="nm">רמה ${i + 1}</div><div class="sub">${l.t}</div>
+      <div class="st">${un ? '⭐'.repeat(st) + '☆'.repeat(3 - st) : l.need + ' נק׳'}</div></button>`;
+  }).join('');
+  app.innerHTML = `<div class="screen">
+    <div class="top"><span class="chip">⭐ ${S.points}</span><span class="chip">🔥 ${S.days === 1 ? 'יום 1' : S.days + ' ימים'}</span><button class="chip" id="snd">${S.sound ? '🔊' : '🔇'}</button></div>
+    <div class="hello">${hello}</div>${prog}
+    <div class="scroll"><div class="grid">${cards}</div></div></div>`;
+  $('#snd').onclick = () => { S.sound = !S.sound; save(); sfx.tap(); home(); };
+  app.querySelectorAll('.lvl').forEach(b => b.onclick = () => {
+    const i = +b.dataset.i;
+    if (!isUnlocked(i)) { sfx.bad(); toast(`חסרות עוד ${LEVELS[i].need - S.points} נקודות, ${NAME} — אתה כמעט שם! 💪`); return; }
+    sfx.tap(); learn(i);
+  });
+}
+
+/* ================= למידה ================= */
+function learn(li, k = 0) {
+  screen = 'learn';
+  const L = LEVELS[li], w = L.w[k], last = k === L.w.length - 1;
+  app.innerHTML = `<div class="screen">
+    <div class="top"><button class="chip" id="x">✕</button><span class="chip">${k + 1} / ${L.w.length}</span><button class="chip" id="skip">דלג לאתגר ⏭</button></div>
+    <div class="hello">רמה ${li + 1}: ${L.t} ${L.e}<small>הכירו את המילים לפני האתגר</small></div>
+    <div class="qcard" style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:.4rem">
+      <div class="big" style="font-size:5rem">${w[2]}</div><div class="word">${w[0]}</div><div class="he">${w[1]}</div>
+      ${canSpeak() ? '<div><button class="chip" id="spk">🔊 שמע</button></div>' : ''}
+    </div>
+    <div class="row"><button class="btn sec" id="prev" ${k ? '' : 'disabled style="opacity:.4"'}>◀ הקודם</button>
+    <button class="btn" id="next">${last ? 'לאתגר! 🚀' : 'הבא ▶'}</button></div></div>`;
+  $('#x').onclick = home; $('#skip').onclick = () => startQuiz(li);
+  $('#prev').onclick = () => { if (k) { sfx.tap(); learn(li, k - 1); } };
+  $('#next').onclick = () => { sfx.tap(); last ? startQuiz(li) : learn(li, k + 1); };
+  const sp = $('#spk'); if (sp) sp.onclick = () => speak(w[0]);
+}
+
+/* ================= אתגר ================= */
+let Q = null, timerId = null;
+function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } if (Q && Q.to) clearTimeout(Q.to); }
+
+function distract(w, n, li) {
+  const ok = x => x !== w && x[0] !== w[0] && x[1] !== w[1] && x[2] !== w[2];
+  let out = shuffle(LEVELS[li].w.filter(ok)).slice(0, n);
+  if (out.length < n) out = out.concat(shuffle(ALL.filter(x => ok(x) && !out.includes(x))).slice(0, n - out.length));
+  return out;
+}
+
+function startQuiz(li) {
+  stopTimer();
+  const L = LEVELS[li];
+  let ws = shuffle(L.w), wi = 0;
+  const nextW = () => ws[wi++ % ws.length];
+  const types = ['en2he', 'pic']; if (li >= 1) types.push('he2en');
+  const queue = [];
+  for (let r = 0; r < ROUNDS; r++) {
+    if (li >= 2 && (r === 4 || r === 9)) queue.push({ type: 'match', words: shuffle(L.w).slice(0, 4) });
+    else queue.push({ type: pick(types), word: nextW(), timed: li >= 3 && r % 2 === 1 });
+  }
+  Q = { li, queue, i: 0, right: 0, streak: 0, best: 0, points: 0, locked: false, to: null, before: unlockedSet() };
+  renderQ();
+}
+
+function updChips() {
+  const p = $('#qp'), s = $('#qs');
+  if (p) { p.textContent = '⭐ ' + Q.points; p.classList.remove('bump'); void p.offsetWidth; p.classList.add('bump'); }
+  if (s) s.textContent = Q.streak >= 2 ? '🔥 ' + Q.streak : '';
+}
+
+function renderQ() {
+  const it = Q.queue[Q.i];
+  if (!it) return finish();
+  screen = 'quiz'; Q.locked = false; Q.t0 = Date.now();
+  const li = Q.li, n = li === 0 ? 2 : li === 1 ? 3 : 4;
+  const head = `<div class="top"><button class="chip" id="x">✕</button><span class="chip">שאלה ${Math.min(Q.i + 1, Q.queue.length)}/${Q.queue.length}</span>
+    <span class="chip" id="qs">${Q.streak >= 2 ? '🔥 ' + Q.streak : ''}</span><span class="chip" id="qp">⭐ ${Q.points}</span></div>
+    <div class="bar"><i style="width:${Q.i / Q.queue.length * 100}%"></i></div>`;
+  let body = '';
+  if (it.type === 'match') {
+    const R = shuffle(it.words);
+    body = `<div class="qcard sm" style="font-size:1rem;font-weight:800">🔗 חברו כל מילה לתרגום שלה</div>
+      <div class="match" id="mt"><div style="display:grid;gap:.5rem">${it.words.map((w, k) => `<button class="opt en" data-s="L" data-k="${w[0]}">${w[0]}</button>`).join('')}</div>
+      <div style="display:grid;gap:.5rem">${R.map(w => `<button class="opt" data-s="R" data-k="${w[0]}">${w[1]}</button>`).join('')}</div></div>`;
+    app.innerHTML = `<div class="screen">${head}${body}<div class="fb" id="fb"></div></div>`;
+    $('#x').onclick = home; setupMatch(it); return;
+  }
+  const w = it.word; let opts, card, cls = '';
+  if (it.type === 'en2he') {
+    opts = shuffle([w, ...distract(w, n - 1, li)]);
+    card = `<div class="big">${w[2]}</div><div class="word">${w[0]}</div><div class="sm">מה הפירוש בעברית?</div>`;
+  } else if (it.type === 'pic') {
+    opts = shuffle([w, ...distract(w, n - 1, li)]);
+    card = `<div class="word">${w[0]}</div><div class="sm">איזו תמונה מתאימה?</div>`; cls = 'emo';
+  } else {
+    opts = shuffle([w, ...distract(w, n - 1, li)]);
+    card = `<div class="he">${w[1]}</div><div class="sm">איך אומרים את זה באנגלית?</div>`; cls = 'en';
+  }
+  const label = o => it.type === 'en2he' ? o[1] : it.type === 'pic' ? o[2] : o[0];
+  const secs = Math.max(5, 12 - li);
+  app.innerHTML = `<div class="screen">${head}
+    ${it.timed ? '<div class="tbar"><i id="tb"></i></div>' : ''}
+    <div class="qcard" style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:.2rem">${card}${it.retry ? '<div class="sm">🔁 סיבוב תיקון</div>' : ''}${it.timed ? '<div class="sm">⏱️ מהר! זמן מוגבל</div>' : ''}</div>
+    <div class="opts">${opts.map((o, k) => `<button class="opt ${cls}" data-k="${k}">${label(o)}</button>`).join('')}</div>
+    <div class="fb" id="fb"></div></div>`;
+  $('#x').onclick = home;
+  app.querySelectorAll('.opt').forEach(b => b.onclick = () => answer(b, opts[+b.dataset.k] === w, it, secs));
+  if (it.timed) {
+    const t0 = Date.now(), tb = $('#tb');
+    timerId = setInterval(() => {
+      const left = secs * 1000 - (Date.now() - t0);
+      tb.style.width = Math.max(0, left / (secs * 10)) + '%';
+      if (left <= 0) { stopTimerOnly(); answer(null, false, it, secs, true); }
+    }, 100);
+  }
+}
+function stopTimerOnly() { if (timerId) { clearInterval(timerId); timerId = null; } }
+
+function advance() { stopTimer(); Q.i++; renderQ(); }
+function feedback(ok, msg) {
+  const fb = $('#fb'); if (!fb) return;
+  fb.className = 'fb ' + (ok ? 'ok' : 'bad'); fb.textContent = msg;
+  fb.onclick = advance;
+}
+
+function answer(btn, ok, it, secs, timeout) {
+  if (Q.locked) return; Q.locked = true; stopTimerOnly();
+  const el = (Date.now() - Q.t0) / 1000;
+  app.querySelectorAll('.opt').forEach(b => b.style.pointerEvents = 'none');
+  if (ok) {
+    btn.classList.add('ok'); Q.streak++; Q.best = Math.max(Q.best, Q.streak);
+    let pts = it.retry ? 5 : 10 + Math.min(Q.streak - 1, 5) * 2;
+    if (!it.retry) { if (el < 3) pts += 5; if (it.timed) pts += Math.max(0, Math.round(secs - el)); Q.right++; }
+    Q.points += pts; sfx.ok(); buzz(25);
+    feedback(true, (STREAK_MSG[Q.streak] || okMsg()) + '  +' + pts);
+  } else {
+    if (btn) btn.classList.add('bad');
+    const idx = [...app.querySelectorAll('.opt')];
+    idx.forEach(b => { /* מסמן את התשובה הנכונה */ });
+    markCorrect(it);
+    Q.streak = 0; sfx.bad(); buzz(80);
+    if (!it.retry) Q.queue.push({ ...it, retry: true, timed: false });
+    feedback(false, timeout ? '⏰ נגמר הזמן, ' + NAME + '! התשובה בירוק 💚' : pick(BAD_MSG));
+  }
+  updChips();
+  Q.to = setTimeout(advance, ok ? 1000 : 2200);
+}
+function markCorrect(it) {
+  const w = it.word;
+  const txt = it.type === 'en2he' ? w[1] : it.type === 'pic' ? w[2] : w[0];
+  app.querySelectorAll('.opt').forEach(b => { if (b.textContent === txt) b.classList.add('ok'); });
+}
+
+function setupMatch(it) {
+  const m = { sel: null, done: 0, mistakes: 0 }; Q.locked = false;
+  app.querySelectorAll('#mt .opt').forEach(b => b.onclick = () => {
+    if (Q.locked || b.classList.contains('done')) return;
+    sfx.tap();
+    if (!m.sel) { m.sel = b; b.classList.add('sel'); return; }
+    if (m.sel === b) { b.classList.remove('sel'); m.sel = null; return; }
+    if (m.sel.dataset.s === b.dataset.s) { m.sel.classList.remove('sel'); m.sel = b; b.classList.add('sel'); return; }
+    const a = m.sel; m.sel = null; a.classList.remove('sel');
+    if (a.dataset.k === b.dataset.k) {
+      a.classList.add('done'); b.classList.add('done'); m.done++;
+      Q.streak++; Q.best = Math.max(Q.best, Q.streak);
+      const pts = 8 + Math.min(Q.streak, 5); Q.points += pts; sfx.ok(); buzz(20); updChips();
+      feedback(true, (STREAK_MSG[Q.streak] || pick(['יפה, ' + NAME + '!', 'זוג מושלם! 💞', 'בול! 🎯'])) + '  +' + pts);
+      if (m.done === 4) {
+        Q.locked = true; const good = m.mistakes <= 1; if (good) Q.right++;
+        feedback(good, good ? 'חיברת הכל, ' + NAME + '! ' + pick(['🌟', '👏', '🏅']) : 'סיימת! בפעם הבאה תהיה עוד יותר מדויק 💪');
+        Q.to = setTimeout(advance, 1200);
+      }
+    } else {
+      m.mistakes++; Q.streak = 0; sfx.bad(); buzz(60); updChips();
+      [a, b].forEach(x => { x.classList.add('bad'); setTimeout(() => x.classList.remove('bad'), 400); });
+      feedback(false, 'לא בדיוק — נסה שוב, ' + NAME + '! 🙂');
+    }
+  });
+}
+
+/* ================= תוצאות ================= */
+function finish() {
+  stopTimer(); screen = 'result';
+  const pct = Q.right / ROUNDS;
+  const stars = pct >= .95 ? 3 : pct >= .8 ? 2 : pct >= .6 ? 1 : 0;
+  const bonus = 10 + stars * 10, earned = Q.points + bonus;
+  S.points += earned; S.stars[Q.li] = Math.max(S.stars[Q.li] || 0, stars); S.plays++; save();
+  const after = unlockedSet();
+  const fresh = after.map((u, i) => u && !Q.before[i] ? i : -1).filter(i => i >= 0);
+  const li = Q.li, nextOk = li + 1 < LEVELS.length && isUnlocked(li + 1);
+  const nextIdx = LEVELS.findIndex(l => S.points < l.need);
+  const need = nextIdx >= 0 ? `<div class="hint" style="text-align:center">עוד ${LEVELS[nextIdx].need - S.points} נקודות לפתיחת רמה ${nextIdx + 1} ${LEVELS[nextIdx].e}</div>` : '';
+  app.innerHTML = `<div class="screen"><div class="scroll" style="display:flex;flex-direction:column;gap:.6rem">
+    <div class="hello" style="text-align:center">${stars >= 1 ? 'סיימת את הרמה! 🎉' : 'סיום סיבוב'}</div>
+    <div class="stars">${[0, 1, 2].map(k => `<span class="star ${k < stars ? 'on' : ''}" style="--d:${.3 + k * .35}s">⭐</span>`).join('')}</div>
+    <div class="qcard" style="font-weight:800;line-height:1.35">${RESULT_MSG[stars]}</div>
+    <div class="sum">✅ ${Q.right} מתוך ${ROUNDS} נכון בניסיון ראשון<br>🔥 רצף שיא: ${Q.best}<br>⭐ +${earned} נקודות (כולל בונוס ${bonus})<br>🏅 סך הכל: ${S.points} נקודות</div>
+    ${fresh.map(i => `<div class="banner">🔓 נפתחה רמה ${i + 1}: ${LEVELS[i].t} ${LEVELS[i].e}<br>${NAME}, אתה עולה רמה כמו גדול! 🚀</div>`).join('')}
+    ${need}
+    <div class="row">${nextOk && stars >= 1 ? '<button class="btn green" id="nx">לרמה הבאה ▶</button>' : ''}<button class="btn" id="again">שוב ↻</button></div>
+    <button class="btn sec" id="map">🗺️ למפת הרמות</button></div></div>`;
+  $('#again').onclick = () => { sfx.tap(); learn(li); };
+  $('#map').onclick = home;
+  const nx = $('#nx'); if (nx) nx.onclick = () => { sfx.tap(); learn(li + 1); };
+  if (fresh.length) { sfx.unlock(); confetti(40); buzz(200); } else if (stars >= 2) { sfx.win(); confetti(26); } else if (stars === 1) { sfx.win(); } else { sfx.bad(); }
+}
+
+/* כפתור "חזרה" של המכשיר (נקרא מתוך אפליקציית האנדרואיד) */
+window.onHwBack = () => { if (screen !== 'home') { home(); return true; } return false; };
+document.addEventListener('keydown', e => { if (e.key === 'Escape' || e.key === 'Backspace') { if (window.onHwBack()) e.preventDefault(); } });
+
+home();
+</script>
+</body>
+</html>
